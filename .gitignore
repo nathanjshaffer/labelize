@@ -150,3 +150,5 @@ cython_debug/
 **.xls
 
 **/*-checkpoint*
+
+build_dist.sh
