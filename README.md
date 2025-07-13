@@ -1,1 +1,1 @@
-# labelizer
+# labelize
