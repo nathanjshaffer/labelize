@@ -23,11 +23,11 @@ manualPrinter = ManualPrinter(labelPrinter)
 
 configFile = configparser.ConfigParser()
 
-confPath = os.path.expanduser("~") + "/.labelizer.conf"
+confPath = os.path.expanduser("~") + "/.labelize.conf"
 
 
 def k(k):
-    return ('labelizer', k)
+    return ('labelize', k)
 
 
 def saveConfig():
@@ -151,7 +151,7 @@ def handleEvent(window, event, values):
 
 def processEvent(window, event, values):
     if isinstance(event, tuple):
-        if event[0] == 'labelizer':
+        if event[0] == 'labelize':
             handleEvent(window, event, values)
             return
 
@@ -182,7 +182,7 @@ def processEvent(window, event, values):
             return
 
     elif event == sg.WIN_CLOSED:
-        handleEvent(window, ('labelizer', 'CLOSE'), values)
+        handleEvent(window, ('labelize', 'CLOSE'), values)
     return
 
 
@@ -194,7 +194,7 @@ def run():
     loadConfig()
     print(os.getcwd())
 
-    window = sg.Window('Labelizer', makeLayout(), finalize=True, icon=f'{paths["img"]}/labelizer.png')
+    window = sg.Window('Labelize', makeLayout(), finalize=True, icon=f'{paths["img"]}/labelize.png')
     window.bind("<KP_Enter>", key=k('PRINT'))
     window.bind("<Return>", key=k('PRINT'))
     window.bind("<Escape>", k('CLOSE'))
@@ -204,7 +204,7 @@ def run():
         processEvent(window, event, values)
 
 def package():
-    with resources.path('labelizer', 'img') as imgPath:
+    with resources.path('labelize', 'img') as imgPath:
         print(imgPath)
         paths['img'] = imgPath
         run()

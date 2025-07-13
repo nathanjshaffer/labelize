@@ -3,7 +3,7 @@ from PIL import Image
 from pint import UnitRegistry
 import FreeSimpleGUI as sg
 
-paths = {'img': f'{os.getcwd()}/labelizer/img'}
+paths = {'img': f'{os.getcwd()}/labelize/img'}
 ureg = UnitRegistry()
 
 def key(object, k):
@@ -44,7 +44,7 @@ class LabelPrinter(printerBase):
         self.chainLength = ureg('6in')
         self.chainCount = 6
         self.imagePrint = False
-        self.outputImgFile = os.path.expanduser("~") + '/labelizer output'
+        self.outputImgFile = os.path.expanduser("~") + '/labelize output'
 
 
     def k(self, k):
