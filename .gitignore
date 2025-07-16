@@ -153,3 +153,7 @@ cython_debug/
 **/*-checkpoint*
 
 build_dist.sh
+
+setup.cfg
+
+.obsidian/

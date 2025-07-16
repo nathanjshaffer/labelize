@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='Labelize',
-    version='1.1',
+    version='1.2',
     author="Nathan Shaffer",
     author_email="nathanjshaffer@gmail.com",
     description="Gui utility to generate oragnizer labels",
@@ -26,7 +26,9 @@ setup(
     install_requires=[
         'Pint',
         'FreeSimpleGUI',
-        'configparser'
+        'configparser',
+        'Pillow',
+        'types-Pillow'
     ],
     include_package_data=True,
     package_data={

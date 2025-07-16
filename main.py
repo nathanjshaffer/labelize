@@ -4,6 +4,7 @@ import importlib.resources as resources
 
 
 def main():
+    """ """
     run()
 
 
