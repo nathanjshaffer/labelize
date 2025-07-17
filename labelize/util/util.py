@@ -4,7 +4,7 @@ from typing import Any
 # from setuptools.distutils.util import strtobool
 import ast
 from PIL import Image
-from pint import UnitRegistry
+from pint import UnitRegistry, Quantity
 import FreeSimpleGUI as sg
 
 paths = {'img': f'{os.getcwd()}/labelize/img'}
@@ -14,22 +14,30 @@ ureg = UnitRegistry()
 class PrintError(Exception):
   """_summary_."""
 
-  def __init__(self, message):
+  def __init__(self, message: str):
     """_summary_.
 
     Args:
-        message (_type_): _description_
+        message (str): _description_
     """
     super().__init__(message)
 
 
 class printerBase:
-  """_summary_."""
+  """_summary_.
+
+  Attributes:
+      labelPrinter (_type_): _description_
+  """
 
   modules: dict = {'confItems': [], 'tabs': []}
 
   def __init__(self, labelPrinter: Any):
-    """_summary_."""
+    """_summary_.
+
+    Args:
+        labelPrinter (Any): _description_
+    """
     printerBase.modules['confItems'].append(self)
     if labelPrinter:
       printerBase.modules['tabs'].append(self)
@@ -39,18 +47,18 @@ class printerBase:
     """_summary_.
 
     Args:
-        k (object): _description_
+        k (str): _description_
 
     Returns:
         tuple: _description_
     """
     return (id(self), k)
 
-  def saveConfig(self, configFile):
+  def saveConfig(self, configFile: dict) -> None:
     """_summary_.
 
     Args:
-        configFile (_type_): _description_
+        configFile (dict): _description_
     """
     name = self.__class__.__name__
     if name not in configFile:
@@ -59,23 +67,26 @@ class printerBase:
       if not hasattr(value, '__dict__') and value is not None:
         configFile[name][key] = str(getattr(self, key))
 
-  def loadConfig(self, configFile):
+  def loadConfig(self, configFile: dict) -> None:
     """_summary_.
 
     Args:
-        configFile (_type_): _description_
+        configFile (dict): _description_
     """
     name = self.__class__.__name__
     if name not in configFile:
       configFile[name] = {}
     for key, value in self.__dict__.items():
       if not hasattr(value, '__dict__') and value is not None:
+        v = configFile[name].get(key, value)
         try:
           v = ast.literal_eval(configFile[name].get(key, value))
-        except ValueError:
-          v = value
-        except SyntaxError:
-          v = value
+        except ValueError as e:
+          print(e)
+          v = v
+        except SyntaxError as e:
+          print(e)
+          v = v
         setattr(self, key, type(value)(v))
 
 
@@ -89,18 +100,18 @@ class LabelPrinter(printerBase):
       slotCount (_type_): _description_
       imagePrint (_type_): _description_
       outputImgFile (_type_): _description_
-      cutAll (_type_): _description_
+      cut (_type_): _description_
   """
 
   def __init__(self):
     """_summary_."""
-    self.fontSize = 16
-    self.dpi = 180
-    self.chainLength = ureg('6in')
-    self.slotCount = 6
-    self.imagePrint = False
-    self.outputImgFile = os.path.expanduser("~") + '/labelize output'
-    self.cutAll = False
+    self.fontSize: int = 16
+    self.dpi: int = 180
+    self.chainLength: Quantity = ureg('6in')
+    self.slotCount: int = 6
+    self.imagePrint: bool = False
+    self.outputImgFile: str = os.path.expanduser("~") + '/labelize output'
+    self.cut: str = 'CUT_ENDS'
     super().__init__(None)
 
   def getTextWidth(self, label: list) -> int:
@@ -141,13 +152,17 @@ class LabelPrinter(printerBase):
     Returns:
         tuple: _description_
     """
-    if index == 0:
-      return (True, False)
-    elif self.cutAll:
-      return (False, True)
-    elif index == self.slotCount - 1:
-      return (False, True)
-    return (False, False)
+    print(index, self.cut)
+    lt = False
+    rt = False
+
+    if index == 0 and not self.cut == 'CUT_NONE':
+      lt = True
+    if self.cut == 'CUT_ALL':
+      rt = True
+    if index == self.slotCount - 1 and not self.cut == 'CUT_NONE':
+      rt = True
+    return (lt, rt)
 
   def getPad(self, text: list, cut: tuple) -> list:
     """_summary_.
@@ -182,12 +197,12 @@ class LabelPrinter(printerBase):
 
     Args:
         chain (list): _description_
-        cutAll (bool): _description_
     """
     cmd = ["ptouch-print", "--fontsize", str(self.fontSize)]
     index = 0
     for label in chain:
       cut = self.computeCut(index)
+      print(cut)
       cmd += self.getPad(label, cut)
       index += 1
 

@@ -69,7 +69,7 @@ def makeLayout() -> list:
       sg.Column(
         [
           [
-            sg.Text("Label Length"),
+            sg.Text("Label Length:"),
             sg.Input(default_text=f"{labelPrinter.chainLength:#~}", key=k('LABEL_LENGTH'), size=10, enable_events=True),
             sg.pin(sg.Text("Format Error", text_color='red', visible=False, key=k('FORMAT_ERR_TXT')))
           ]
@@ -78,7 +78,7 @@ def makeLayout() -> list:
       sg.Column(
         [
           [
-            sg.Text("Columns"),
+            sg.Text("Columns:"),
             sg.Spin(list(range(1, 10)), initial_value=labelPrinter.slotCount, key=k('SLOT_COUNT'), enable_events=True)
           ]
         ]
@@ -86,8 +86,20 @@ def makeLayout() -> list:
       sg.Column(
         [
           [
-            sg.Text("Font Size"),
+            sg.Text("Font Size:"),
             sg.Spin(list(range(10, 20)), initial_value=labelPrinter.fontSize, key=k('FONT_SIZE'), enable_events=True)
+          ]
+        ]
+      ),
+    ],
+    [
+      sg.Column(
+        [
+          [
+            sg.Text("Cut Marks:"),
+            sg.Radio('None', "CUT", key=k("CUT_NONE"), default=labelPrinter.cut == "CUT_NONE", enable_events=True),
+            sg.Radio('Ends', "CUT", key=k("CUT_ENDS"), default=labelPrinter.cut == "CUT_ENDS", enable_events=True),
+            sg.Radio('All', "CUT", key=k("CUT_ALL"), default=labelPrinter.cut == "CUT_ALL", enable_events=True)
           ]
         ]
       )
@@ -148,6 +160,10 @@ def handleEvent(window: sg.Window, event: tuple, values: dict) -> None:
 
   if event[1] == 'OUTPUT_IMG_FILE':
     labelPrinter.outputImgFile = values[event]
+    return
+
+  if 'CUT_' in event[1]:
+    labelPrinter.cut = event[1]
     return
 
   if event[1] == 'PRINT':
