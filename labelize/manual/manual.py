@@ -40,7 +40,8 @@ class ManualPrinter(printerBase):
         rows.append(self.header)
         row_max = 2
       while row_i < row_max:
-        rows.append(values[self.k(f"VAL{col_i}.{row_i}")])
+        if not values[self.k(f"VAL{col_i}.{row_i}")] == "":
+            rows.append(values[self.k(f"VAL{col_i}.{row_i}")])
         row_i += 1
       cols.append(rows)
       col_i += 1

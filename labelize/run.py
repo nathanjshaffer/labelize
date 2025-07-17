@@ -141,7 +141,9 @@ def handleEvent(window: sg.Window, event: tuple, values: dict) -> None:
     return
 
   if event[1] == 'IMAGE_PRINT':
+    print('IMAGE_PRINT')
     labelPrinter.imagePrint = values[event]
+    print(labelPrinter.imagePrint)
     return
 
   if event[1] == 'OUTPUT_IMG_FILE':

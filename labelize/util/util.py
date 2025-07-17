@@ -1,6 +1,8 @@
 """_summary_."""
 import subprocess, os
 from typing import Any
+# from setuptools.distutils.util import strtobool
+import ast
 from PIL import Image
 from pint import UnitRegistry
 import FreeSimpleGUI as sg
@@ -68,7 +70,13 @@ class printerBase:
       configFile[name] = {}
     for key, value in self.__dict__.items():
       if not hasattr(value, '__dict__') and value is not None:
-        setattr(self, key, type(value)(configFile[name].get(key, value)))
+        try:
+          v = ast.literal_eval(configFile[name].get(key, value))
+        except ValueError:
+          v = value
+        except SyntaxError:
+          v = value
+        setattr(self, key, type(value)(v))
 
 
 class LabelPrinter(printerBase):
