@@ -87,7 +87,7 @@ def makeLayout() -> list:
         [
           [
             sg.Text("Font Size:"),
-            sg.Spin(list(range(10, 20)), initial_value=labelPrinter.fontSize, key=k('FONT_SIZE'), enable_events=True)
+            sg.Spin(list(range(10, 31)), initial_value=labelPrinter.fontSize, key=k('FONT_SIZE'), enable_events=True)
           ]
         ]
       ),
@@ -139,7 +139,6 @@ def handleEvent(window: sg.Window, event: tuple, values: dict) -> None:
       labelPrinter.chainLength = ureg(values[event])
       window[k('FORMAT_ERR_TXT')].update(visible=False)
     except errors.UndefinedUnitError:
-      # traceback.print_exc()
       print(f"can\'t parse {values[event]}")
       window[k('FORMAT_ERR_TXT')].update(visible=True)
     return
@@ -150,6 +149,8 @@ def handleEvent(window: sg.Window, event: tuple, values: dict) -> None:
 
   if event[1] == 'SLOT_COUNT':
     labelPrinter.slotCount = values[event]
+    for tab in printerBase.modules['tabs']:
+      tab.handleEvent(window, event, values)
     return
 
   if event[1] == 'IMAGE_PRINT':
@@ -205,9 +206,10 @@ def processEvent(window: sg.Window, event: Union[tuple, str], values: dict) -> N
         window.refresh()
       return
 
-  elif event == sg.WIN_CLOSED:
-    handleEvent(window, ('labelize', 'CLOSE'), values)
-  return
+  else:
+    if event == sg.WIN_CLOSED:
+      handleEvent(window, ('labelize', 'CLOSE'), values)
+    return
 
 
 def run():

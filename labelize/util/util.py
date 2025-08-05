@@ -80,13 +80,15 @@ class printerBase:
       if not hasattr(value, '__dict__') and value is not None:
         v = configFile[name].get(key, value)
         try:
-          v = ast.literal_eval(configFile[name].get(key, value))
-        except ValueError as e:
-          print(e)
-          v = v
-        except SyntaxError as e:
-          print(e)
-          v = v
+          v = ast.literal_eval(v)
+        except ValueError:
+          pass
+          # print(e, key, v)
+          # v = v
+        except SyntaxError:
+          pass
+          # print(e, key, v)
+          # v = v
         setattr(self, key, type(value)(v))
 
 
