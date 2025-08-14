@@ -64,7 +64,9 @@ class printerBase:
     if name not in configFile:
       configFile[name] = {}
     for key, value in self.__dict__.items():
-      if not hasattr(value, '__dict__') and value is not None:
+      if isinstance(value, Quantity):
+        configFile[name][key] = str(value)
+      elif not hasattr(value, '__dict__') and value is not None:
         configFile[name][key] = str(getattr(self, key))
 
   def loadConfig(self, configFile: dict) -> None:
@@ -77,8 +79,12 @@ class printerBase:
     if name not in configFile:
       configFile[name] = {}
     for key, value in self.__dict__.items():
-      if not hasattr(value, '__dict__') and value is not None:
-        v = configFile[name].get(key, value)
+      v = configFile[name].get(key, value)
+      if isinstance(value, Quantity):
+        print(key, v.__class__.__name__)
+        # value(v)
+        setattr(self, key, ureg(str(v)))
+      elif not hasattr(value, '__dict__') and value is not None:
         try:
           v = ast.literal_eval(v)
         except ValueError:
@@ -110,6 +116,8 @@ class LabelPrinter(printerBase):
     self.fontSize: int = 16
     self.dpi: int = 180
     self.chainLength: Quantity = ureg('6in')
+    self.slotLength: Quantity = ureg('1in')
+    self.useChainLength: bool = True
     self.slotCount: int = 6
     self.imagePrint: bool = False
     self.outputImgFile: str = os.path.expanduser("~") + '/labelize output'
@@ -179,8 +187,11 @@ class LabelPrinter(printerBase):
     lcut, rcut = cut
 
     textW = self.getTextWidth(["--text"] + text)
-
-    pad = ((self.chainLength.to(ureg.inch).magnitude / self.slotCount) * self.dpi - textW) / 2
+    if self.useChainLength:
+      length = self.chainLength.to(ureg.inch).magnitude / self.slotCount
+    else:
+      length = self.slotLength.to(ureg.inch).magnitude
+    pad = (length * self.dpi - textW) / 2
 
     lpad = pad - pad % 1
     if lcut:

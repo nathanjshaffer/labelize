@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
   name='Labelize',
-  version='1.3',
+  version='1.4',
   author="Nathan Shaffer",
   author_email="nathanjshaffer@gmail.com",
   description="Gui utility to generate oragnizer labels",

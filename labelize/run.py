@@ -66,56 +66,110 @@ def makeLayout() -> list:
 
   layout = [
     [
-      sg.Column(
-        [
+      sg.Frame(
+        'Settings', [
           [
-            sg.Text("Label Length:"),
-            sg.Input(default_text=f"{labelPrinter.chainLength:#~}", key=k('LABEL_LENGTH'), size=10, enable_events=True),
-            sg.pin(sg.Text("Format Error", text_color='red', visible=False, key=k('FORMAT_ERR_TXT')))
-          ]
-        ]
-      ),
-      sg.Column(
-        [
+            sg.Column(
+              [
+                [
+                  sg.Text("Columns:"),
+                  sg.Spin(
+                    list(range(1, 10)), initial_value=labelPrinter.slotCount, key=k('SLOT_COUNT'), enable_events=True
+                  )
+                ]
+              ]
+            ),
+            sg.Column(
+              [
+                [
+                  sg.Text("Font Size:"),
+                  sg.Spin(
+                    list(range(10, 31)), initial_value=labelPrinter.fontSize, key=k('FONT_SIZE'), enable_events=True
+                  )
+                ]
+              ]
+            ),
+          ],
           [
-            sg.Text("Columns:"),
-            sg.Spin(list(range(1, 10)), initial_value=labelPrinter.slotCount, key=k('SLOT_COUNT'), enable_events=True)
-          ]
-        ]
-      ),
-      sg.Column(
-        [
+            sg.Column(
+              [
+                [
+                  sg.Frame(
+                    "Label Length:", [
+                      [
+                        sg.Radio(
+                          'Use Label Length',
+                          "LENGTH_RAD",
+                          key=k("CHAIN_LENGTH_RAD"),
+                          default=labelPrinter.useChainLength,
+                          enable_events=True
+                        ),
+                        sg.Input(
+                          default_text=f"{labelPrinter.chainLength:#~}",
+                          key=k('CHAIN_LENGTH'),
+                          size=10,
+                          enable_events=True,
+                          disabled=not labelPrinter.useChainLength
+                        )
+                      ],
+                      [
+                        sg.Radio(
+                          'Use Column Length',
+                          "LENGTH_RAD",
+                          key=k("SLOT_LENGTH_RAD"),
+                          default=not labelPrinter.useChainLength,
+                          enable_events=True
+                        ),
+                        sg.Input(
+                          default_text=f"{labelPrinter.slotLength:#~}",
+                          key=k('SLOT_LENGTH'),
+                          size=10,
+                          enable_events=True,
+                          disabled=labelPrinter.useChainLength
+                        )
+                      ], [sg.pin(sg.Text("Format Error", text_color='red', visible=False, key=k('FORMAT_ERR_TXT')))]
+                    ]
+                  ),
+                ],
+              ]
+            )
+          ],
           [
-            sg.Text("Font Size:"),
-            sg.Spin(list(range(10, 31)), initial_value=labelPrinter.fontSize, key=k('FONT_SIZE'), enable_events=True)
-          ]
-        ]
-      ),
-    ],
-    [
-      sg.Column(
-        [
+            sg.Frame(
+              "Cut Marks:", [
+                [
+                  sg.
+                  Radio('None', "CUT", key=k("CUT_NONE"), default=labelPrinter.cut == "CUT_NONE", enable_events=True),
+                  sg.
+                  Radio('Ends', "CUT", key=k("CUT_ENDS"), default=labelPrinter.cut == "CUT_ENDS", enable_events=True),
+                  sg.Radio('All', "CUT", key=k("CUT_ALL"), default=labelPrinter.cut == "CUT_ALL", enable_events=True)
+                ]
+              ]
+            )
+          ],
           [
-            sg.Text("Cut Marks:"),
-            sg.Radio('None', "CUT", key=k("CUT_NONE"), default=labelPrinter.cut == "CUT_NONE", enable_events=True),
-            sg.Radio('Ends', "CUT", key=k("CUT_ENDS"), default=labelPrinter.cut == "CUT_ENDS", enable_events=True),
-            sg.Radio('All', "CUT", key=k("CUT_ALL"), default=labelPrinter.cut == "CUT_ALL", enable_events=True)
-          ]
-        ]
+            sg.Frame(
+              'Output', [
+                [
+                  sg.
+                  Checkbox('Print to Image', default=labelPrinter.imagePrint, key=k("IMAGE_PRINT"), enable_events=True),
+                  sg.Text("Image output File"),
+                  sg.
+                  Input(default_text=labelPrinter.outputImgFile, key=k('OUTPUT_IMG_FILE'), size=30, enable_events=True),
+                ]
+              ]
+            )
+          ],
+        ],
+        expand_x=True,
+        title_location='n'
       )
     ],
-    [
-      sg.Column(
-        [
-          [
-            sg.Checkbox('Print to Image', default=labelPrinter.imagePrint, key=k("IMAGE_PRINT"), enable_events=True),
-            sg.Text("Image output File"),
-            sg.Input(default_text=labelPrinter.outputImgFile, key=k('OUTPUT_IMG_FILE'), size=30, enable_events=True),
-          ]
-        ]
-      )
-    ], [tabGroup], [sg.pin(sg.Image(key=k('RENDER')))], [sg.HorizontalSeparator(color='grey')],
-    [sg.Button('Close', key=k('CLOSE'))]
+    [sg.HorizontalSeparator(color='grey')],
+    [tabGroup],
+    [sg.pin(sg.Image(key=k('RENDER')))],
+    [sg.HorizontalSeparator(color='grey')],
+    [sg.Button('Close', key=k('CLOSE'))],
   ]
 
   return layout
@@ -134,13 +188,18 @@ def handleEvent(window: sg.Window, event: tuple, values: dict) -> None:
     window.close()
     sys.exit("Goodbye")
 
-  if event[1] == 'LABEL_LENGTH':
+  if event[1].endswith('_LENGTH'):
     try:
-      labelPrinter.chainLength = ureg(values[event])
+      if event[1].startswith('CHAIN_'):
+        labelPrinter.chainLength = ureg(values[event])
+      else:
+        labelPrinter.slotLength = ureg(values[event])
       window[k('FORMAT_ERR_TXT')].update(visible=False)
+      window[event].update(text_color='black')
     except errors.UndefinedUnitError:
       print(f"can\'t parse {values[event]}")
-      window[k('FORMAT_ERR_TXT')].update(visible=True)
+      window[k('FORMAT_ERR_TXT')].update(visible=True, value=f'Format Error:can\'t parse {values[event]}')
+      window[event].update(text_color='red')
     return
 
   if event[1] == 'FONT_SIZE':
@@ -166,6 +225,12 @@ def handleEvent(window: sg.Window, event: tuple, values: dict) -> None:
   if 'CUT_' in event[1]:
     labelPrinter.cut = event[1]
     return
+
+  if '_LENGTH_RAD' in event[1]:
+    labelPrinter.useChainLength = event[1] == 'CHAIN_LENGTH_RAD'
+
+    window[k('CHAIN_LENGTH')].update(disabled=not labelPrinter.useChainLength)
+    window[k('SLOT_LENGTH')].update(disabled=labelPrinter.useChainLength)
 
   if event[1] == 'PRINT':
     processEvent(window, (values[k('-TABGROUP-')][0], event[1]), values)
